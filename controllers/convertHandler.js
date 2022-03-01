@@ -25,18 +25,17 @@ function ConvertHandler() {
         const fraction = input.split("/");
 
         if (fraction.length > 1) {
-            if (fraction.length > 2) throw new Error("Double+ fractions not allowed");
+            if (fraction.length > 2) return null;
 
             const leftMatch = input.match(/^(\d+\.?\d*)(?=\/)/);
             const rightMatch = input.match(/(?<=\/)(\d+\.?\d*)/);
 
-            if (leftMatch === null && rightMatch === null)
-                throw new Error("Invalid fraction format");
+            if (leftMatch === null && rightMatch === null) return null;
 
             const left = parseFloat(leftMatch[0]);
             const right = parseFloat(rightMatch[0]);
 
-            if (right === 0) throw new Error("Cannot divide by 0");
+            if (right === 0) return null;
 
             result = left / right;
         } else {
@@ -51,13 +50,13 @@ function ConvertHandler() {
     this.getUnit = function (input) {
         let result = input.match(/[A-Za-z]+$/);
 
-        if (!result) throw new Error("Unit required as the last part of the string");
+        if (!result) return null;
 
         result = result[0].toLowerCase();
 
         if (result === "l") result = "L";
 
-        if (!Object.keys(this.spellings).includes(result)) throw new Error("invalid unit");
+        if (!Object.keys(this.spellings).includes(result)) return null;
 
         return result;
     };
@@ -119,18 +118,23 @@ function ConvertHandler() {
     };
 
     this.getString = function (initNum, initUnit, returnNum, returnUnit) {
-        return `${initNum} ${this.spellOutUnit(
-            initUnit
-        )} converts to ${returnNum} ${this.spellOutUnit(returnUnit)}`;
+        const unit = this.spellOutUnit(initUnit);
+
+        return `${initNum} ${unit} converts to ${returnNum} ${this.spellOutUnit(returnUnit)}`;
     };
 
     this.handle = function (input) {
-        const initNum = this.round(this.getNum(input), 6);
+        const initNum = this.getNum(input);
         const initUnit = this.getUnit(input);
-        const returnUnit = this.getReturnUnit(initUnit);
-        const returnNum = this.round(this.convert(initNum, initUnit), 6);
 
-        const string = this.getString(initNum, initUnit, this.round(returnNum, 5), returnUnit);
+        if (!initNum && initUnit) throw new Error("invalid number");
+        else if (!initUnit && initNum) throw new Error("invalid unit");
+        else if (!initNum && !initUnit) throw new Error("invalid number and unit");
+
+        const returnUnit = this.getReturnUnit(initUnit);
+        const returnNum = this.round(this.convert(initNum, initUnit), 5);
+
+        const string = this.getString(initNum, initUnit, returnNum, returnUnit);
 
         const result = {
             initNum,
