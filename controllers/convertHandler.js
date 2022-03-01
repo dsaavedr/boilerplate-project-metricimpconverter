@@ -53,11 +53,11 @@ function ConvertHandler() {
 
         if (!result) throw new Error("Unit required as the last part of the string");
 
-        result = result[0];
+        result = result[0].toLowerCase();
 
         if (result === "l") result = "L";
 
-        if (!Object.keys(this.spellings).includes(result)) throw new Error("Unit not found");
+        if (!Object.keys(this.spellings).includes(result)) throw new Error("invalid unit");
 
         return result;
     };
